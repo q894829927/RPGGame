@@ -33,9 +33,6 @@ public:
 	FGameplayAttributeData MaxHealth;
 	ATTRIBUTE_ACCESSORS_BASIC(UAuraAttributeSet, MaxHealth)	
 
-	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Damage, Category = "Attributes")
-	FGameplayAttributeData Damage;
-	ATTRIBUTE_ACCESSORS_BASIC(UAuraAttributeSet, Damage)	
 
 	UPROPERTY(BlueprintReadOnly, ReplicatedUsing = OnRep_Mana, Category = "Attributes")
 	FGameplayAttributeData Mana;
@@ -49,8 +46,6 @@ public:
 	void OnRep_Health(const FGameplayAttributeData& OldHealth) const; 
 	UFUNCTION()
 	void OnRep_MaxHealth(const FGameplayAttributeData& OldMaxHealth) const;
-	UFUNCTION()
-	void OnRep_Damage(const FGameplayAttributeData& OldDamage) const;
 	UFUNCTION()
 	void OnRep_Mana(const FGameplayAttributeData& OldMana) const;
 	UFUNCTION()
