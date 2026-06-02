@@ -3,9 +3,9 @@
 
 #include "UI/WidgetController/OverlayWidgetController.h"
 #include "AbilitySystem/AuraAttributeSet.h"
+#include "AbilitySystem/AuraAbilitySystemComponentBase.h"
 void UOverlayWidgetController::BroadcastInitialValues()
 {
-	// 这里可以添加一些逻辑来广播初始值，例如玩家的生命值、魔法值等属性。
 	const UAuraAttributeSet* AuraAttributeSet = Cast<UAuraAttributeSet>(AttributeSet);
 
 	if (AuraAttributeSet)
@@ -14,8 +14,6 @@ void UOverlayWidgetController::BroadcastInitialValues()
 		OnMaxHealthChanged.Broadcast(AuraAttributeSet->GetMaxHealth());
 		OnManaChanged.Broadcast(AuraAttributeSet->GetMana());
 		OnMaxManaChanged.Broadcast(AuraAttributeSet->GetMaxMana());
-
-		
 	}
 }
 
@@ -27,19 +25,50 @@ void UOverlayWidgetController::BindCallbacksToDependencies()
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		AuraAttributeSet->GetHealthAttribute()
-	).AddUObject(this, &UOverlayWidgetController::HealthChanged);
+	).AddLambda([this](const FOnAttributeChangeData& Data)
+	{
+		OnHealthChanged.Broadcast(Data.NewValue);
+		});
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		AuraAttributeSet->GetMaxHealthAttribute()
-	).AddUObject(this, &UOverlayWidgetController::MaxHealthChanged);
+	).AddLambda([this](const FOnAttributeChangeData& Data)
+	{
+		OnMaxHealthChanged.Broadcast(Data.NewValue);
+		});
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		AuraAttributeSet->GetManaAttribute()
-	).AddUObject(this, &UOverlayWidgetController::ManaChanged);
+	).AddLambda([this](const FOnAttributeChangeData& Data)
+	{
+		OnManaChanged.Broadcast(Data.NewValue);
+		});
 
 	AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(
 		AuraAttributeSet->GetMaxManaAttribute()
-	).AddUObject(this, &UOverlayWidgetController::MaxManaChanged);
+	).AddLambda([this](const FOnAttributeChangeData& Data)
+	{
+		OnMaxManaChanged.Broadcast(Data.NewValue);
+		});
+
+
+	Cast<UAuraAbilitySystemComponentBase>(AbilitySystemComponent)->EffectAssetTags.AddLambda(
+		[this](const FGameplayTagContainer& AssetTags)
+		{
+			for (const FGameplayTag& Tag : AssetTags)
+			{
+				// MatchesTag 会检查 Tag 是否与 MessageTag 匹配，考虑到父子关系
+
+				//"Message.HealthPotion".MatchesTag("Message") will return True, "Message".MatchesTag("Message.HealthPotion") will return False
+				FGameplayTag MessageTag = FGameplayTag::RequestGameplayTag(FName("Message"));
+				if (Tag.MatchesTag(MessageTag)) {
+					const FUIWidgetRow* Row = GetDataTableRowByTag<FUIWidgetRow>(MessageWidgetDataTable, Tag);
+					MessageWidgetRowDelegate.Broadcast(Row ? *Row : FUIWidgetRow());
+				}
+				
+			}
+		}
+	);
 }
 
 void UOverlayWidgetController::HealthChanged(const FOnAttributeChangeData& Data) const

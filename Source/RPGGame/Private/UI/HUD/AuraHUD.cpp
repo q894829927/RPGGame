@@ -27,7 +27,9 @@ void AAuraHUD::InitOverlay(APlayerController* InPlayerController, APlayerState* 
 	const FWidgetControllerParams WidgetControllerParams(InPlayerController, InPlayerState, InAbilitySystemComponent, InAttributeSet);
 	UOverlayWidgetController* WidgetController = GetOverlayWidgetController(WidgetControllerParams);
 
+	// 先设置 WidgetController，让蓝图有机会绑定事件监听器
 	OverlayWidget->SetWidgetController(WidgetController);
-	WidgetController->BindCallbacksToDependencies();
+	// 然后再广播初始值，这样蓝图的事件监听器能接收到
+	WidgetController->BroadcastInitialValues();
 	Widget->AddToViewport();
 }
