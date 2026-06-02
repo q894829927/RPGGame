@@ -54,6 +54,7 @@ void AAuraCharacter::InitAbilityActorInfo()
 			AuraHUD->InitOverlay(AuraPlayerController, AuraPlayerState, AuraAbilitySystemComponent, AttributeSet);
 		}
 	}
+	InitializePrimaryAttributes();
 }
 // Called when the character is possessed by a controller (server only)
 void AAuraCharacter::PossessedBy(AController* NewController)
